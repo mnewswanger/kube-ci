@@ -1,0 +1,27 @@
+site_name: Docker Registry Documentation
+pages:
+  - Kube CI Overview: index.md
+  - Architecture: architecture.md
+  - Jobs:
+    - Overview: jobs/index.md
+    - Rules: jobs/rules.md
+    - Steps: jobs/steps.md
+    - Notifiers: jobs/notifiers.md
+  - Endpoints:
+    - Overview: endpoints/index.md
+theme: material
+markdown_extensions:
+  - admonition
+  - codehilite
+  - footnotes
+  - pymdownx.arithmatex
+  - pymdownx.betterem(smart_enable=all)
+  - pymdownx.caret
+  - pymdownx.critic
+  - pymdownx.inlinehilite
+  - pymdownx.magiclink
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
+  - pymdownx.tasklist(custom_checkbox=true)
+  - pymdownx.tilde
