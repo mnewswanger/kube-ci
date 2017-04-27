@@ -6,4 +6,6 @@ Since the tool is designed to interact primarily with Kubernetes, the infrastruc
 
 ## Infrastructure ##
 
-![Diagram](resources/diagram.svg)
+![Pipeline Diagram](resources/pipeline-flow-diagram.svg)
+
+![Network Diagram](resources/network-diagram.svg)
