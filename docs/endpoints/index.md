@@ -4,11 +4,15 @@
 
 ### / ###
 
-Trigger a job.  Jobs are triggered based off of `labels` provided by the web request or computed by the inbound hooks with enabled providers.  See [jobs](/jobs/) section for details.
+Trigger all applicable jobs based off of `labels` provided by the web request or computed by the inbound hooks with enabled providers.  See [jobs](/jobs/) section for details.
+
+[Trigger Job Spec](trigger-jobs)
 
 ### /callback/<callbackToken\>/ ###
 
 Provide an endpoint for callbacks from asynchronous jobs.  The `jobInstanceId` and `callbackToken` will are provided as variables to be provided to the webhook consumer.
+
+[Job Callback Spec](job-callback)
 
 ### /documentation/ ###
 

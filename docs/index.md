@@ -21,6 +21,10 @@ KubeCI provides the ability to interact with `kubernetes` to run jobs and manipu
 
 KubeCI can be fully deployed with no interactive steps required from the user.
 
+### Flexible ###
+
+Each step can be triggered as the start point for a job.  Therefore, all steps should be idempotent and achieve a desired state (not delta-driven) and independent of previous steps.  This allows the user to manually or automatically kick off any part(s) of the job that they are targeting.
+
 ### Easy to Manage at Scale ###
 
 Because the service can be managed via CLI using JSON / YAML payloads, KubeCI can be easily deployed via configuration management tools.

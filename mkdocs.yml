@@ -1,6 +1,6 @@
-site_name: Docker Registry Documentation
+site_name: KubeCI - Kubernetes Continuous Integration and Delivery
 pages:
-  - Kube CI Overview: index.md
+  - KubeCI Overview: index.md
   - Architecture: architecture.md
   - Jobs:
     - Overview: jobs/index.md
@@ -9,6 +9,13 @@ pages:
     - Notifiers: jobs/notifiers.md
   - Endpoints:
     - Overview: endpoints/index.md
+    - Trigger Jobs: endpoints/trigger-jobs.md
+    - Job Callback: endpoints/job-callback.md
+    - Documentation: endpoints/documentation.md
+    - Healthz: endpoints/healthz.md
+    - Metrics: endpoints/metrics.md
+    - Execute Job: endpoints/execute-job.md
+    - Notify: endpoints/notify.md
 theme: material
 markdown_extensions:
   - admonition
