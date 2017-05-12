@@ -1,4 +1,4 @@
-# Notfiers #
+# Notifiers #
 
 ## Notifier Types ##
 

@@ -8,10 +8,11 @@ Rules are triggered based on `labels`.
 
 Rules can be applied via the following methods:
 
-* `match` - Provided string matches the label
-* `regexMatch` - Provided regular expression matches the label
-* `noMatch` - Provided string does not match the label
-* `regexNoMatch` - Provided regular expression does not match the label
+* `exact` - Provided string matches the label
+* `exists` - Passes if the provided label exists
+* `regex` - Provided regular expression matches the label
+
+Each rule also supports inversion.
 
 Mutliple rules can be combined in both AND / OR combinations.  Rules can be applied to `jobs`, `steps`, and `tasks`.
 
