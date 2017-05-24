@@ -1,20 +1,25 @@
 package rules
 
+import "github.com/sirupsen/logrus"
+
 // Ruleset contains one or more rules or rulesets along with a mode
 // Modes:
 //   all - match all rules to pass
 //   any - match any of the rules to pass
 type Ruleset struct {
-	Name  string `json:"name"`
-	Mode  string `json:"mode"`
-	Rules []interface {
-		Passes(map[string]string) bool
-		Validates() bool
-	}
+	Name             string `json:"name"`
+	Mode             string `json:"mode"`
+	Rules            []ruleInterface
 	validationErrors []string
 }
 
-func (rs Ruleset) Passes(labels map[string]string) bool {
+// Matches returns true if the provided labels match the ruleset
+// This applies recursively to provide options for complex matches
+func (rs *Ruleset) Matches(labels map[string]string) bool {
+	logger.WithFields(logrus.Fields{
+		"rule_name": rs.Name,
+	}).Debug("Comparing labels against rule")
+
 	if !rs.Validates() {
 		return false
 	}
@@ -24,7 +29,8 @@ func (rs Ruleset) Passes(labels map[string]string) bool {
 		defaultValue = true
 	}
 	for _, r := range rs.Rules {
-		if r.Passes(labels) {
+		logger.Debug()
+		if r.Matches(labels) {
 			if rs.Mode == "any" {
 				return true
 			}
@@ -37,7 +43,8 @@ func (rs Ruleset) Passes(labels map[string]string) bool {
 	return defaultValue
 }
 
-func (rs Ruleset) Validates() bool {
+// Validates returns true when the ruleset and all of its children validate
+func (rs *Ruleset) Validates() bool {
 	var childrenValidated = true
 	if rs.Name == "" {
 		rs.addValidationError("Missing Name property")

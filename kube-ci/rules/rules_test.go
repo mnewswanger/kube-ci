@@ -89,10 +89,25 @@ func TestRuleValidationFailures(t *testing.T) {
 
 var requestLabels = map[string]map[string]string{
 	"empty": {},
-	"gitlab": {
+	"gitlab_push_generic": {
 		"git.repository": "repo",
+		"git.branch":     "feature",
+		"git.action":     "push",
+	},
+	"gitlab_push_foo_develop": {
+		"git.repository": "foo",
+		"git.branch":     "develop",
+		"git.action":     "push",
+	},
+	"gitlab_push_foo_master": {
+		"git.repository": "foo",
 		"git.branch":     "master",
 		"git.action":     "push",
+	},
+	"gitlab_merge_foo_master": {
+		"git.repository": "foo",
+		"git.branch":     "master",
+		"git.action":     "merge",
 	},
 	"generic": {
 		"my.label": "test",
@@ -100,19 +115,41 @@ var requestLabels = map[string]map[string]string{
 	},
 }
 
-var rulesToTest = map[string]Rule{
-	"gitlab_request": {
-		Name:        "gitlab_request",
-		LabelName:   "git.repository",
-		LabelValue:  "",
-		MatchMode:   "exact",
-		InvertMatch: true,
+var rulesToTest = map[string]ruleInterface{
+	"gitlab_request": &Rule{
+		Name:      "gitlab_request",
+		LabelName: "git.repository",
+		MatchMode: "exists",
 	},
-	"not_gitlab_request": {
-		Name:       "not_gitlab_request",
+	"gitlab_project_foo": &Rule{
+		Name:       "gitlab_project_foo",
 		LabelName:  "git.repository",
-		LabelValue: "",
+		LabelValue: "foo",
 		MatchMode:  "exact",
+	},
+	"gitlab_branch_develop": &Rule{
+		Name:       "gitlab_branch_master",
+		LabelName:  "git.branch",
+		LabelValue: "develop",
+		MatchMode:  "exact",
+	},
+	"gitlab_branch_master": &Rule{
+		Name:       "gitlab_branch_master",
+		LabelName:  "git.branch",
+		LabelValue: "master",
+		MatchMode:  "exact",
+	},
+	"not_gitlab_request": &Rule{
+		Name:        "not_gitlab_request",
+		InvertMatch: true,
+		LabelName:   "git.repository",
+		MatchMode:   "exists",
+	},
+	"gitlab_master_branch_regex": &Rule{
+		Name:       "gitlab_branch_regex",
+		LabelName:  "git.branch",
+		LabelValue: "m.+r",
+		MatchMode:  "regex",
 	},
 }
 
@@ -128,17 +165,147 @@ var ruleRequestMap = map[*struct {
 		ruleName:     "not_gitlab_request",
 		labelSetName: "empty",
 	}: true,
+	{
+		ruleName:     "gitlab_request",
+		labelSetName: "gitlab_push_generic",
+	}: true,
+	{
+		ruleName:     "not_gitlab_request",
+		labelSetName: "gitlab_push_generic",
+	}: false,
+	{
+		ruleName:     "gitlab_project_foo",
+		labelSetName: "gitlab_push_foo_develop",
+	}: true,
+	{
+		ruleName:     "gitlab_branch_master",
+		labelSetName: "gitlab_push_foo_develop",
+	}: false,
+	{
+		ruleName:     "gitlab_branch_master",
+		labelSetName: "gitlab_push_foo_master",
+	}: true,
+	{
+		ruleName:     "gitlab_branch_master",
+		labelSetName: "gitlab_merge_foo_master",
+	}: true,
+	{
+		ruleName:     "gitlab_master_branch_regex",
+		labelSetName: "gitlab_merge_foo_master",
+	}: true,
 }
 
-func TestRulePasses(t *testing.T) {
+func TestRuleMatches(t *testing.T) {
 	for testData, expectedResult := range ruleRequestMap {
 		var r = rulesToTest[testData.ruleName]
-		if r.Passes(requestLabels[testData.labelSetName]) != expectedResult {
+		var labels, exists = requestLabels[testData.labelSetName]
+		if !exists {
+			panic("Invalid label specified for test: " + testData.labelSetName)
+		}
+		if r.Matches(labels) != expectedResult {
 			t.Error(
-				"Rule pass state did not match expected: " + testData.labelSetName + "->" + testData.ruleName,
+				"Rule match failed:", testData.labelSetName, "->", testData.ruleName, "Expected:", expectedResult,
 			)
 		}
 	}
 }
 
 // TEST RULESETS
+var rulesetsToTest = map[string]ruleInterface{
+	"gitlab": &Ruleset{
+		Name: "gitlab",
+		Mode: "all",
+		Rules: []ruleInterface{
+			rulesToTest["gitlab_request"],
+		},
+	},
+	"gitlab_with_ruleset_child": &Ruleset{
+		Name: "gitlab_with_ruleset_child",
+		Mode: "all",
+		Rules: []ruleInterface{
+			&Ruleset{
+				Name: "gitlab",
+				Mode: "all",
+				Rules: []ruleInterface{
+					rulesToTest["gitlab_request"],
+				},
+			},
+		},
+	},
+	"always_fail": &Ruleset{
+		Name: "always_fail",
+		Mode: "all",
+		Rules: []ruleInterface{
+			rulesToTest["gitlab_request"],
+			rulesToTest["not_gitlab_request"],
+		},
+	},
+	"always_pass": &Ruleset{
+		Name: "always_pass",
+		Mode: "any",
+		Rules: []ruleInterface{
+			rulesToTest["gitlab_request"],
+			rulesToTest["not_gitlab_request"],
+		},
+	},
+	"gitlab_example": &Ruleset{
+		Name: "gitlab_example",
+		Mode: "all",
+		Rules: []ruleInterface{
+			rulesToTest["gitlab_request"],
+			rulesToTest["gitlab_project_foo"], &Ruleset{
+				Name: "Branch master or develop",
+				Mode: "any",
+				Rules: []ruleInterface{
+					rulesToTest["gitlab_branch_master"],
+					rulesToTest["gitlab_branch_develop"],
+				},
+			},
+		},
+	},
+}
+
+var rulesetRequestMap = map[*struct {
+	rulesetName  string
+	labelSetName string
+}]bool{
+	{
+		rulesetName:  "gitlab",
+		labelSetName: "empty",
+	}: false,
+	{
+		rulesetName:  "gitlab",
+		labelSetName: "gitlab_push_generic",
+	}: true,
+	{
+		rulesetName:  "gitlab_with_ruleset_child",
+		labelSetName: "gitlab_push_generic",
+	}: true,
+	{
+		rulesetName:  "always_fail",
+		labelSetName: "empty",
+	}: false,
+	{
+		rulesetName:  "always_pass",
+		labelSetName: "empty",
+	}: true,
+	{
+		rulesetName:  "gitlab_example",
+		labelSetName: "gitlab_push_foo_master",
+	}: true,
+}
+
+func TestRuleSetMatches(t *testing.T) {
+	for testData, expectedResult := range rulesetRequestMap {
+		var r = rulesetsToTest[testData.rulesetName]
+		var labels, exists = requestLabels[testData.labelSetName]
+		if !exists {
+			panic("Invalid label specified for test: " + testData.labelSetName)
+		}
+		if r.Matches(labels) != expectedResult {
+			t.Error(
+				"Ruleset match failed:", testData.labelSetName, "->", testData.rulesetName, "Expected:", expectedResult,
+			)
+		}
+	}
+}

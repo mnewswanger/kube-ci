@@ -2,6 +2,8 @@ package rules
 
 import (
 	"regexp"
+
+	"github.com/sirupsen/logrus"
 )
 
 // Rule contains match information to apply to the labels provided by the caller or produced by the system
@@ -20,23 +22,37 @@ type Rule struct {
 	regex            *regexp.Regexp
 }
 
-func (r *Rule) Passes(labels map[string]string) bool {
+// Matches returns true if the provided labels match the rule
+func (r *Rule) Matches(labels map[string]string) bool {
 	if !r.Validates() {
 		return false
 	}
 
+	var matches = false
 	var labelValue, labelExists = labels[r.LabelName]
 	switch r.MatchMode {
 	case "exact":
-		return (!r.InvertMatch && r.LabelValue == labelValue) || (r.InvertMatch && r.LabelValue != labelValue)
+		matches = (!r.InvertMatch && r.LabelValue == labelValue) || (r.InvertMatch && r.LabelValue != labelValue)
+		break
 	case "exists":
-		return (!r.InvertMatch && labelExists) || (r.InvertMatch && !labelExists)
+		matches = (!r.InvertMatch && labelExists) || (r.InvertMatch && !labelExists)
+		break
 	case "regex":
-		return false
+		var regexMatches = r.regex.Match([]byte(labelValue))
+		matches = (!r.InvertMatch && regexMatches) || (r.InvertMatch && !regexMatches)
+		break
 	}
-	return false
+	logger.WithFields(logrus.Fields{
+		"mode":           r.MatchMode,
+		"matched":        matches,
+		"label_exists":   labelExists,
+		"label_value":    labelValue,
+		"expected_value": r.LabelValue,
+	}).Debug("Rule evaluation complete")
+	return matches
 }
 
+// Validates returns true when the rule validates
 func (r *Rule) Validates() bool {
 	if r.Name == "" {
 		r.addValidationError("Missing Name property")
