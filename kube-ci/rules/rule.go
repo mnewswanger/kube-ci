@@ -14,10 +14,10 @@ import (
 //   regex - Regex comparison
 type Rule struct {
 	Name             string `json:"name"`
+	InvertMatch      bool   `json:"invert_match"`
 	LabelName        string `json:"label_name"`
 	LabelValue       string `json:"label_value"`
 	MatchMode        string `json:"match_mode"`
-	InvertMatch      bool   `json:"invert_match"`
 	validationErrors []string
 	regex            *regexp.Regexp
 }
@@ -83,4 +83,23 @@ func (r *Rule) Validates() bool {
 
 func (r *Rule) addValidationError(e string) {
 	r.validationErrors = append(r.validationErrors, e)
+}
+
+func (r *Rule) unmarshalRaw(raw map[string]interface{}) error {
+	if _, e := raw["name"]; e {
+		r.Name = raw["name"].(string)
+	}
+	if _, e := raw["invert_match"]; e {
+		r.InvertMatch = raw["invert_match"].(bool)
+	}
+	if _, e := raw["label_name"]; e {
+		r.LabelName = raw["label_name"].(string)
+	}
+	if _, e := raw["label_value"]; e {
+		r.LabelValue = raw["label_value"].(string)
+	}
+	if _, e := raw["match_mode"]; e {
+		r.MatchMode = raw["match_mode"].(string)
+	}
+	return nil
 }
