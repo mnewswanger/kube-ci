@@ -26,3 +26,4 @@ When consuming webhooks from Gitlab, the following labels will be available:
 * `gitlab.branch` - Target branch of the update
 * `gitlab.commit` - Commit ID
 * `gitlab.project_name`- Project name
+* `gitlab.action` - Action being applied to the repository
