@@ -31,3 +31,14 @@ Notifiers can be triggered by events at a job, step, or task level, and each can
 See the `Notifiers` documentation for details.
 
 [Notifiers](notifiers)
+
+## Events ##
+
+The following events are associated to `jobs`.  They can be applied to notifiers.
+
+* `complete` - The job completed
+* `failed` - The job failed
+* `started` - The job was started
+* `succeeded` - The job succeeded
+
+_Jobs and steps do not have an `attempt_failed` event similar to tasks since the job itself does not get retried; tasks do._

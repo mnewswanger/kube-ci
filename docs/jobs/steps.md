@@ -20,23 +20,32 @@ Update properties of a Kubernetes deployment.  This will likely be an image upda
 
 ## Events ##
 
-Events can be applied to `jobs`, `steps`, and `tasks`.
+The following events are associated to `steps`.  They can be applied to notifiers and event_handlers.
 
-### Job Level Events ###
+* `complete` - The step completed - *Only applicable to notifiers*
+* `failed` - The step failed
+* `started` - The step was started - *Only applicable to notifiers*
+* `succeeded` - The step succeeded
 
-The job does not have a `jobTryFailed` similar to the properties below since the job itself does not get retried; steps do.
 
-* `jobFailed` - The job failed
-* `jobSucceeded` - The job succeeded
+The following events are associated to `tasks`.  They can be applied to notifiers and event_handlers.
 
-### Step Level Events ###
+* `attempt_failed` - The task attempt failed but may be retried - *Only applicable to notifiers*
+* `complete` - The task completed - *Only applicable to notifiers*
+* `failed` - The task failed and will not be retried
+* `started` - The task was started - *Only applicable to notifiers*
+* `succeeded` - The task succeeded
 
-* `stepTryFailed` - The step failed
-* `stepFailed` - The step failed, and no retries remain
-* `stepSucceeded` - The step succeeded
+_Jobs and steps do not have an `attempt_failed` event similar to tasks since the job itself does not get retried; tasks do._
 
-### Task Level Events ###
+## Event Handler Actions ##
 
-* `taskTryFailed` - The task failed
-* `taskFailed` - The task failed, and no retries remain
-* `taskSucceeded` - The task succeeded
+When configuring event handlers for `steps`, the following actions can be configured:
+
+* `set_job_failure` - Mark the job as failed
+* `set_job_success` - Mark the job as completed successfully
+
+When configuring event handlers for `tasks`, the following actions can be configured:
+
+* `set_step_failure` - Mark the step as failed
+* `set_step_success` - Mark the step as completed successfully
