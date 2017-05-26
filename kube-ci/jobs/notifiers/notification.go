@@ -11,14 +11,19 @@ type Notification struct {
 	Name         string                 `json:"name"`
 	Logger       *logrus.Logger         `json:"-"`
 	Properties   NotificationProperties `json:"properties"`
+	Retries      uint8                  `json:"retries"`
 	Type         string                 `json:"notification_type"`
 	Verbosity    uint8                  `json:"-"`
 	handler      notifier
+	instanceID   string
 	loggerFields logrus.Fields
 }
 
 // Fire sends the specified notification
 func (n Notification) Fire() error {
+	n.setStatus("pending")
+
+	var err error
 	if n.Logger == nil {
 		n.Logger = logrus.New()
 		switch n.Verbosity {
@@ -52,13 +57,27 @@ func (n Notification) Fire() error {
 				"name": n.Name,
 				"type": n.Type,
 			}).Error("Invalid type")
-			return errors.New("Invalid notification type provided: " + n.Type)
+			err = errors.New("Invalid notification type provided: " + n.Type)
 		}
 	}
-	if !n.handler.validates(n.Properties) {
-		return errors.New("Notification validation failed")
+	if err == nil {
+		if !n.handler.validates(n.Properties) {
+			err = errors.New("Notification validation failed")
+		}
+		if err == nil {
+			err = n.handler.fire(n.Properties)
+			if err == nil {
+				n.setStatus("succeeded")
+				return err
+			}
+		}
 	}
-	return n.handler.fire(n.Properties)
+	n.setStatus("failed")
+	return err
+}
+
+func (n Notification) setStatus(status string) {
+	panic("NEEDS IMPLEMENTATION")
 }
 
 // NotificationProperties represent metadata that can be sent to a notification

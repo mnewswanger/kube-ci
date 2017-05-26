@@ -13,3 +13,7 @@ type Task struct {
 	Notifiers     []notifiers.Trigger `json:"notifiers"`
 	Retries       uint8               `json:"retries"`
 }
+
+func (t *Task) run() {
+
+}
