@@ -12,6 +12,7 @@ type Task struct {
 	EventHandlers map[string]string   `json:"event_handlers"`
 	Notifiers     []notifiers.Trigger `json:"notifiers"`
 	Retries       uint8               `json:"retries"`
+	Timeout       string              `json:"timeout"`
 }
 
 func (t *Task) run() {

@@ -8,6 +8,8 @@ import (
 // Job represents a KubeCI workflow
 type Job struct {
 	Name      string              `json:"name"`
+	Namespace string              `json:"namespace"`
+	Labels    map[string]string   `json:"labels"`
 	Notifiers []notifiers.Trigger `json:"notifiers"`
 	Rules     rules.Ruleset       `json:"rules"`
 	Steps     []interface{}       `json:"steps"`

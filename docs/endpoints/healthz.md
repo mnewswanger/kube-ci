@@ -4,7 +4,7 @@ The `healtz` endpoint is set up to provide a health check endpoint for the servi
 
 ## URL Pattern ##
 
-### GET /metrics/ ###
+### GET /healthz/ ###
 
 ## Input ##
 
@@ -30,4 +30,5 @@ The `healtz` endpoint is set up to provide a health check endpoint for the servi
 ### Response Codes ###
 
 * **200**: Service is ready
-* **500**: Service is not yet ready or is in a failed state
+* **500**: Service is in a failed state
+* **503**: Service is not yet ready

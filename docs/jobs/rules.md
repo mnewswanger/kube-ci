@@ -14,7 +14,7 @@ Rules can be applied via the following methods:
 
 Each rule also supports inversion.
 
-Mutliple rules can be combined in both AND / OR combinations.  Rules can be applied to `jobs`, `steps`, and `tasks`.
+Multiple rules can be combined in both AND / OR combinations.  Rules can be applied to `jobs`, `steps`, and `tasks`.
 
 ## Generated Labels ##
 
@@ -23,7 +23,7 @@ Mutliple rules can be combined in both AND / OR combinations.  Rules can be appl
 When consuming webhooks from Gitlab, the following labels will be available:
 
 * `gitlab.project_name` - Name of the project
+* `gitlab.action` - Action being applied to the repository
 * `gitlab.branch` - Target branch of the update
 * `gitlab.commit` - Commit ID
-* `gitlab.project_name`- Project name
-* `gitlab.action` - Action being applied to the repository
+* `gitlab.url`- Project URL

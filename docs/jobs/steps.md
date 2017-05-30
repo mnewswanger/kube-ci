@@ -28,9 +28,10 @@ The following events are associated to `steps`.  They can be applied to notifier
 * `succeeded` - The step succeeded
 
 
-The following events are associated to `tasks`.  They can be applied to notifiers and event_handlers.
+The following events are associated to `tasks`.  They can be applied to notifiers.
 
 * `attempt_failed` - The task attempt failed but may be retried - *Only applicable to notifiers*
+* `attempt_started` - The task started an attempt - *Only applicable to notifiers*
 * `complete` - The task completed - *Only applicable to notifiers*
 * `failed` - The task failed and will not be retried
 * `started` - The task was started - *Only applicable to notifiers*
@@ -42,10 +43,5 @@ _Jobs and steps do not have an `attempt_failed` event similar to tasks since the
 
 When configuring event handlers for `steps`, the following actions can be configured:
 
-* `set_job_failure` - Mark the job as failed
+* `continue` - Have the job move on even if its default behavior is different
 * `set_job_success` - Mark the job as completed successfully
-
-When configuring event handlers for `tasks`, the following actions can be configured:
-
-* `set_step_failure` - Mark the step as failed
-* `set_step_success` - Mark the step as completed successfully

@@ -21,8 +21,6 @@ type Notification struct {
 
 // Fire sends the specified notification
 func (n Notification) Fire() error {
-	n.setStatus("pending")
-
 	var err error
 	if n.Logger == nil {
 		n.Logger = logrus.New()
@@ -46,9 +44,6 @@ func (n Notification) Fire() error {
 	}
 	if n.handler == nil {
 		switch n.Type {
-		case "email":
-			n.handler = &emailNotifier{}
-			break
 		case "webhook":
 			n.handler = &webhookNotifier{}
 			break
@@ -60,10 +55,15 @@ func (n Notification) Fire() error {
 			err = errors.New("Invalid notification type provided: " + n.Type)
 		}
 	}
+
+	if err == nil && !n.handler.validates(n.Properties) {
+		err = errors.New("Notification validation failed")
+	}
+
 	if err == nil {
-		if !n.handler.validates(n.Properties) {
-			err = errors.New("Notification validation failed")
-		}
+		n.setStatus("pending")
+		// Return clean response to caller
+
 		if err == nil {
 			err = n.handler.fire(n.Properties)
 			if err == nil {
@@ -71,7 +71,10 @@ func (n Notification) Fire() error {
 				return err
 			}
 		}
+	} else {
+		// Return bad response to caller
 	}
+
 	n.setStatus("failed")
 	return err
 }
