@@ -1,10 +1,15 @@
 package cmd
 
 import (
+	"strconv"
+	"time"
+
 	"github.com/fatih/color"
 	"github.com/ghodss/yaml"
 	"github.com/spf13/cobra"
 
+	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"go.mikenewswanger.com/kube-ci/kube-ci/jobs"
 	"go.mikenewswanger.com/utilities/filesystem"
 )
@@ -16,13 +21,55 @@ var serveCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Prepare application for run
-		// Pre-cache jobs
+		t := time.Now()
+		logger.Level = logrus.DebugLevel
+		healthy := true
 
-		// Start listenning for requests
+		// Configure Gin
+		if commandLineFlags.verbosity == 0 {
+			gin.SetMode(gin.ReleaseMode)
+		}
+		r := gin.Default()
+
+		// Pre-cache jobs
+		configuredJobs, notifications, err := jobs.Load("filesystem", commandLineFlags.configDirectory)
+		if err != nil {
+			panic(err)
+		}
+
+		// Log the initialization
+		logger.WithFields(logrus.Fields{
+			"elapsed_µs": time.Since(t).Nanoseconds() / 1000,
+		}).Info("Initialization complete")
+
+		// Set up listen endpoints
+		r.GET("/healthz", func(c *gin.Context) {
+			if healthy {
+				c.String(200, `{"status": "up"}`)
+			} else {
+				c.String(500, `{"status": "down"}`)
+			}
+		})
+		r.GET("/jobs", func(c *gin.Context) {
+			c.JSON(200, configuredJobs)
+		})
+		r.GET("/notifiers", func(c *gin.Context) {
+			c.JSON(200, notifications)
+		})
+		r.GET("/reload", func(c *gin.Context) {
+			configuredJobs, notifications, err = jobs.Load("filesystem", commandLineFlags.configDirectory)
+			if err != nil {
+				c.String(500, `{"error": "Could not reload configuration"}`)
+			}
+			c.String(200, `{"error": null}`)
+		})
+
+		// Listen for requests
+		r.Run(":" + strconv.Itoa(int(commandLineFlags.listenPort)))
 
 		// This is all temporary and should be moved into tests instead
-		var fs = filesystem.Filesystem{}
-		var contents, err = fs.LoadFileIfExists("~/documents/projects/kube-ci/job.yml")
+		fs := filesystem.Filesystem{}
+		contents, err := fs.LoadFileIfExists("~/documents/projects/kube-ci/job.yml")
 		if err != nil {
 			panic(err)
 		}
@@ -40,6 +87,7 @@ var serveCmd = &cobra.Command{
 
 func init() {
 	serveCmd.Flags().StringVarP(&commandLineFlags.configDirectory, "config", "c", "", "Configuration Directory")
+	serveCmd.Flags().Uint16VarP(&commandLineFlags.listenPort, "listen-port", "p", 8080, "Listen Port")
 
 	RootCmd.AddCommand(serveCmd)
 }

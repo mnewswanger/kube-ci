@@ -9,6 +9,7 @@ import (
 // Notification is an object that can interact with an external service to publish information about jobs
 type Notification struct {
 	Name         string                 `json:"name"`
+	Namespace    string                 `json:"namespace"`
 	Logger       *logrus.Logger         `json:"-"`
 	Properties   NotificationProperties `json:"properties"`
 	Retries      uint8                  `json:"retries"`
@@ -40,8 +41,8 @@ func (n Notification) Fire() error {
 			n.Logger.Level = logrus.DebugLevel
 			break
 		}
-
 	}
+
 	if n.handler == nil {
 		switch n.Type {
 		case "webhook":

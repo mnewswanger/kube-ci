@@ -24,4 +24,5 @@ func Execute() {
 }
 
 func init() {
+	RootCmd.PersistentFlags().CountVarP(&commandLineFlags.verbosity, "verbosity", "v", "Verbosity")
 }

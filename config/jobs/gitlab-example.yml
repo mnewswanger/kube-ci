@@ -1,6 +1,6 @@
 ---
 name: Test Gitlab Hook
-namespace: Common
+namespace: examples
 labels:
   label1: value1
   label2: value2
@@ -31,14 +31,14 @@ steps:
       retries: 3
       timeout: 3600
 notifiers:
-  - name: Email on completion
-    notifier_id: 12
+  - name: Send Slack notification
+    notifier: example.slack-example
     arguments:
       key_1: value
       key_2: value
     events: complete
   - name: Webhook on failure
-    notifier_id: 13
+    notifier: examples.generic-webhook
     arguments:
       key_1: value
       key_2: value

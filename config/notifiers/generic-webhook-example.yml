@@ -1,0 +1,5 @@
+---
+name: generic-webhook
+namespace: examples
+type: webhook
+...

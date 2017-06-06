@@ -1,0 +1,5 @@
+---
+name: slack
+namespace: examples
+type: webhook
+...
