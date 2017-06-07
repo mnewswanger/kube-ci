@@ -22,7 +22,7 @@ func Load(datastore string, path string) (map[string]*Job, map[string]*notifiers
 func loadFromFilesystem(path string) (map[string]*Job, map[string]*notifiers.Notification, error) {
 	fs := filesystem.Filesystem{}
 	if !fs.IsDirectory(path) {
-		return nil, nil, errors.New("Specified path (" + path + ") does not exist or is not accessible")
+		return nil, nil, errors.New("Specified path (\"" + path + "\") does not exist or is not accessible")
 	}
 	n, err := loadNotificationsFromFilesystem(path + "/notifiers")
 	if err != nil {
@@ -38,7 +38,7 @@ func loadFromFilesystem(path string) (map[string]*Job, map[string]*notifiers.Not
 func loadJobsFromFilesystem(path string) (map[string]*Job, error) {
 	var fs = filesystem.Filesystem{}
 	if !fs.IsDirectory(path) {
-		return nil, errors.New("Specified path (" + path + ") does not exist or is not accessible")
+		return nil, errors.New("Specified path (\"" + path + "\") does not exist or is not accessible")
 	}
 	directoryContents, err := fs.GetDirectoryContents(path)
 	if err != nil {
@@ -65,7 +65,7 @@ func loadJobsFromFilesystem(path string) (map[string]*Job, error) {
 func loadNotificationsFromFilesystem(path string) (map[string]*notifiers.Notification, error) {
 	var fs = filesystem.Filesystem{}
 	if !fs.IsDirectory(path) {
-		return nil, errors.New("Specified path (" + path + ") does not exist or is not accessible")
+		return nil, errors.New("Specified path (\"" + path + "\") does not exist or is not accessible")
 	}
 	directoryContents, err := fs.GetDirectoryContents(path)
 	if err != nil {

@@ -64,6 +64,16 @@ var serveCmd = &cobra.Command{
 			c.String(200, `{"error": null}`)
 		})
 
+		r.POST("/", func(c *gin.Context) {
+			var d = &map[string]interface{}{}
+			err := c.Bind(d)
+			if err != nil {
+				logger.Error(err)
+			}
+			y, _ := yaml.Marshal(d)
+			logger.Debug(string(y))
+		})
+
 		// Listen for requests
 		r.Run(":" + strconv.Itoa(int(commandLineFlags.listenPort)))
 
