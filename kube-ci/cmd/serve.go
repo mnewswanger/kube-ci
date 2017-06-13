@@ -4,7 +4,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/fatih/color"
 	"github.com/ghodss/yaml"
 	"github.com/spf13/cobra"
 
@@ -13,7 +12,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"go.mikenewswanger.com/kube-ci/kube-ci/jobs"
-	"go.mikenewswanger.com/utilities/filesystem"
 )
 
 // serveCmd represents the serve command
@@ -98,37 +96,33 @@ var serveCmd = &cobra.Command{
 			labels["git.project.name"] = getStringFromInterface(d, "project", "name")
 			labels["git.project.namespace"] = getStringFromInterface(d, "project", "namespace")
 			labels["git.repository.url_http"] = getStringFromInterface(d, "repository", "git_http_url")
-			labels["git.repostiory.url_ssh"] = getStringFromInterface(d, "repository", "git_ssh_url")
+			labels["git.repository.url_ssh"] = getStringFromInterface(d, "repository", "git_ssh_url")
 			labels["git.user.avatar_url"] = getStringFromInterface(d, "user_avatar")
 			labels["git.user.email"] = getStringFromInterface(d, "user_email")
 			labels["git.user.name"] = getStringFromInterface(d, "user_name")
 
-			ly, _ := yaml.Marshal(labels)
-			color.Blue(string(ly))
+			switch commandLineFlags.verbosity {
+			case 5:
+				y, _ := yaml.Marshal(d)
+				logger.Debug(string(y))
+				fallthrough
+			case 4:
+				labelFields := logrus.Fields{}
+				for k, v := range labels {
+					labelFields[k] = v
+				}
+				logger.WithFields(labelFields).Info("Processed Labels")
+			}
 
-			y, _ := yaml.Marshal(d)
-			logger.Debug(string(y))
+			for _, j := range configuredJobs {
+				j.Trigger(labels)
+			}
+
 			c.String(200, `{"error":null,"message":"Request processed succesfully"}`)
 		})
 
 		// Listen for requests
 		r.Run(":" + strconv.Itoa(int(commandLineFlags.listenPort)))
-
-		// This is all temporary and should be moved into tests instead
-		fs := filesystem.Filesystem{}
-		contents, err := fs.LoadFileIfExists("~/documents/projects/kube-ci/job.yml")
-		if err != nil {
-			panic(err)
-		}
-		color.Yellow(contents)
-		var job *jobs.Job
-		err = yaml.Unmarshal([]byte(contents), &job)
-		if err != nil {
-			panic(err)
-		}
-		var y, _ = yaml.Marshal(job)
-		color.Green(string(y))
-		job.Trigger(map[string]string{})
 	},
 }
 

@@ -1,0 +1,55 @@
+---
+name: Git Tag Push Events
+namespace: examples
+labels:
+  label1: value1
+  label2: value2
+steps:
+  - name: Do something
+    tasks:
+    - name: Task 1
+      action: webhook
+      arguments:
+        url: https://www.google.com
+      retries: 0
+      timeout: 5
+  - name: Do something else
+    tasks:
+    - name: Concurrent Task 1
+      action: kubernetes_job
+      arguments:
+        job_tempate: 1
+      event_handlers:
+        failure: continue
+        success: mark_step_complete
+      retries: 1
+      timeout: 120
+    - name: Concurrent Task 2
+      action: kubernetes_deployment
+      arguments:
+        deployment_name: 1
+      retries: 3
+      timeout: 3600
+notifiers:
+  - name: Send Slack notification
+    notifier: example.slack-example
+    arguments:
+      key_1: value
+      key_2: value
+    events: complete
+  - name: Webhook on failure
+    notifier: examples.generic-webhook
+    arguments:
+      key_1: value
+      key_2: value
+    events: failure
+rules:
+  mode: all
+  name: git_tag_push
+  rules:
+  - invert_match: false
+    label_name: git.event
+    label_value: tag_push
+    match_mode: exact
+    name: Tag push event
+...

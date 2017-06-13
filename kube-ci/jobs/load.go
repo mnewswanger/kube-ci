@@ -44,15 +44,15 @@ func loadJobsFromFilesystem(path string) (map[string]*Job, error) {
 	if err != nil {
 		return nil, err
 	}
-	var job *Job
 	j := map[string]*Job{}
 	for _, f := range directoryContents {
+		job := &Job{}
 		f = path + "/" + f
 		fc, err := fs.LoadFileBytes(f)
 		if err != nil {
 			return nil, err
 		}
-		err = yaml.Unmarshal(fc, &job)
+		err = yaml.Unmarshal(fc, job)
 		if err != nil {
 			return nil, err
 		}

@@ -22,8 +22,16 @@ Multiple rules can be combined in both AND / OR combinations.  Rules can be appl
 
 When consuming webhooks from Gitlab, the following labels will be available:
 
-* `gitlab.project_name` - Name of the project
-* `gitlab.action` - Action being applied to the repository
-* `gitlab.branch` - Target branch of the update
-* `gitlab.commit` - Commit ID
-* `gitlab.url`- Project URL
+* `git.branch` - Branch being targeted by the operation
+* `git.event` - Event type (`push`, `tag_push`)
+* `git.project.avatar_url` - Project image
+* `git.project.name` - Project name
+* `git.project.namespace` - Project namespace
+* `git.repository.url_http` - Repository path (HTTP)
+* `git.repository.url_ssh` - Repository path (SSH)
+* `git.start_commit` - Initial commit as a starting point to the action
+* `git.tag` - Tag name that was pushed
+* `git.target_commit` - Commit the action is targeting
+* `git.user.avatar_url` - Author avatar URL
+* `git.user.email` - Author email address
+* `git.user.name` - Author username

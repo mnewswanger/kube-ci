@@ -1,6 +1,8 @@
 package jobs
 
 import (
+	"github.com/fatih/color"
+
 	"go.mikenewswanger.com/kube-ci/kube-ci/jobs/notifiers"
 	"go.mikenewswanger.com/kube-ci/kube-ci/jobs/rules"
 )
@@ -16,13 +18,15 @@ type Job struct {
 }
 
 // Trigger executes the job if it should be run
-func (j *Job) Trigger(labels map[string]string) error {
+func (j *Job) Trigger(labels map[string]string) (bool, error) {
 	if j.shouldRun(labels) {
-		panic("Job should be running!")
+		color.Green("Job (" + j.Namespace + "." + j.Name + ") should be running!")
+	} else {
+		color.Red("Job (" + j.Namespace + "." + j.Name + ") did not match rules")
 	}
-	return nil
+	return false, nil
 }
 
 func (j *Job) shouldRun(labels map[string]string) bool {
-	return true
+	return j.Rules.Matches(labels)
 }
