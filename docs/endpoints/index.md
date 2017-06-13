@@ -14,10 +14,6 @@ Provide an endpoint for callbacks from asynchronous jobs.  The `jobInstanceId` a
 
 [Job Callback Spec](job-callback)
 
-### /documentation/ ###
-
-View the documentation for the service.
-
 ### /metrics/ ###
 
 Provide `prometheus` metrics endpoints.
