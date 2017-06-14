@@ -1,8 +1,7 @@
 package jobs
 
 import (
-	"github.com/fatih/color"
-
+	"github.com/sirupsen/logrus"
 	"go.mikenewswanger.com/kube-ci/kube-ci/jobs/notifiers"
 	"go.mikenewswanger.com/kube-ci/kube-ci/jobs/rules"
 )
@@ -14,15 +13,20 @@ type Job struct {
 	Labels    map[string]string   `json:"labels"`
 	Notifiers []notifiers.Trigger `json:"notifiers"`
 	Rules     rules.Ruleset       `json:"rules"`
-	Steps     []interface{}       `json:"steps"`
+	Steps     []Step              `json:"steps"`
 }
 
 // Trigger executes the job if it should be run
 func (j *Job) Trigger(labels map[string]string) (bool, error) {
 	if j.shouldRun(labels) {
-		color.Green("Job (" + j.Namespace + "." + j.Name + ") should be running!")
-	} else {
-		color.Red("Job (" + j.Namespace + "." + j.Name + ") did not match rules")
+		logrus.WithFields(logrus.Fields{
+			"job_namespace": j.Namespace,
+			"job_name":      j.Name,
+		}).Info("Running Job")
+
+		for _, s := range j.Steps {
+			s.Execute(labels)
+		}
 	}
 	return false, nil
 }

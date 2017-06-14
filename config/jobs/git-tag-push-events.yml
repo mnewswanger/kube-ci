@@ -1,5 +1,5 @@
 ---
-name: Git Tag Push Events
+name: Git Tag Push Example
 namespace: examples
 labels:
   label1: value1
@@ -13,23 +13,23 @@ steps:
         url: https://www.google.com
       retries: 0
       timeout: 5
+      verify_ssl: true
   - name: Do something else
     tasks:
-    - name: Concurrent Task 1
-      action: kubernetes_job
+    - name: Task 2
+      action: webhook
       arguments:
-        job_tempate: 1
-      event_handlers:
-        failure: continue
-        success: mark_step_complete
-      retries: 1
-      timeout: 120
-    - name: Concurrent Task 2
-      action: kubernetes_deployment
+        url: https://www.google.com
+      retries: 0
+      timeout: 5
+      verify_ssl: true
+    - name: Task 3
+      action: webhook
       arguments:
-        deployment_name: 1
-      retries: 3
-      timeout: 3600
+        url: https://www.google.com
+      retries: 0
+      timeout: 5
+      verify_ssl: true
 notifiers:
   - name: Send Slack notification
     notifier: example.slack-example
@@ -37,12 +37,6 @@ notifiers:
       key_1: value
       key_2: value
     events: complete
-  - name: Webhook on failure
-    notifier: examples.generic-webhook
-    arguments:
-      key_1: value
-      key_2: value
-    events: failure
 rules:
   mode: all
   name: git_tag_push

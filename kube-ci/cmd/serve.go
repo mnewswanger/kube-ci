@@ -86,12 +86,16 @@ var serveCmd = &cobra.Command{
 			if startCommit == "0000000000000000000000000000000000000000" {
 				startCommit = ""
 			}
+			targetCommit := getStringFromInterface(d, "after")
+			if targetCommit == "0000000000000000000000000000000000000000" {
+				targetCommit = ""
+			}
 
 			labels["git.event"] = getStringFromInterface(d, "event_name")
 			labels["git.branch"] = branch
 			labels["git.tag"] = tag
 			labels["git.start_commit"] = startCommit
-			labels["git.target_commit"] = getStringFromInterface(d, "after")
+			labels["git.target_commit"] = targetCommit
 			labels["git.project.avatar_url"] = getStringFromInterface(d, "project", "avatar_url")
 			labels["git.project.name"] = getStringFromInterface(d, "project", "name")
 			labels["git.project.namespace"] = getStringFromInterface(d, "project", "namespace")
@@ -114,8 +118,24 @@ var serveCmd = &cobra.Command{
 				logger.WithFields(labelFields).Info("Processed Labels")
 			}
 
+			triggeredJobs := []struct {
+				namespace string
+				name      string
+			}{}
 			for _, j := range configuredJobs {
-				j.Trigger(labels)
+				running, err := j.Trigger(labels)
+				if err != nil {
+					logger.Error(err)
+				}
+				if running {
+					triggeredJobs = append(triggeredJobs, struct {
+						namespace string
+						name      string
+					}{
+						namespace: j.Namespace,
+						name:      j.Name,
+					})
+				}
 			}
 
 			c.String(200, `{"error":null,"message":"Request processed succesfully"}`)

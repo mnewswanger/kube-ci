@@ -1,7 +1,9 @@
-package steps
+package jobs
 
 import (
 	"sync"
+
+	"github.com/sirupsen/logrus"
 
 	"go.mikenewswanger.com/kube-ci/kube-ci/jobs/notifiers"
 )
@@ -15,14 +17,20 @@ type Step struct {
 }
 
 // Execute provides a method to run the step
-func (s *Step) Execute() {
+func (s *Step) Execute(labels map[string]string) {
+	fields := logrus.Fields{
+		"step_name": s.Name,
+	}
+
+	logrus.WithFields(fields).Info("Starting Step")
 	var wg = &sync.WaitGroup{}
 	for _, t := range s.Tasks {
 		wg.Add(1)
 		go func(t Task, wg *sync.WaitGroup) {
-			t.run()
+			t.Run(labels)
 			wg.Done()
 		}(t, wg)
 	}
 	wg.Wait()
+	logrus.WithFields(fields).Info("Step complete")
 }

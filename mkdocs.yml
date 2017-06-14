@@ -15,6 +15,7 @@ pages:
     - Metrics: endpoints/metrics.md
     - Execute Job: endpoints/execute-job.md
     - Notify: endpoints/notify.md
+  - Todo: todo.md
 theme: material
 markdown_extensions:
   - admonition

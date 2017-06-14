@@ -1,5 +1,5 @@
 ---
-name: Test Gitlab Hook
+name: Git Commit Push Example
 namespace: examples
 labels:
   label1: value1
@@ -45,16 +45,21 @@ notifiers:
     events: failure
 rules:
   mode: all
-  name: gitlab_example
+  name: push_to_dev_or_master_on_any_project
   rules:
   - invert_match: false
-    label_name: git.repository
+    label_name: git.event
+    label_value: push
+    match_mode: exact
+    name: git_push
+  - invert_match: true
+    label_name: git.project.name
     label_value: ""
-    match_mode: exists
-    name: gitlab_request
-  - invert_match: false
-    label_name: git.repository
-    label_value: foo
+    match_mode: exact
+    name: git_request
+  - invert_match: true
+    label_name: git.target_commit
+    label_value: ""
     match_mode: exact
     name: gitlab_project_foo
   - mode: any
