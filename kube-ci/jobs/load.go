@@ -2,18 +2,26 @@ package jobs
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/ghodss/yaml"
+	"github.com/sirupsen/logrus"
 
 	"go.mikenewswanger.com/kube-ci/kube-ci/jobs/notifiers"
 	"go.mikenewswanger.com/utilities/filesystem"
 )
 
 // Load imports jobs from a datastore
-func Load(datastore string, path string) (map[string]*Job, map[string]*notifiers.Notification, error) {
-	switch datastore {
+func Load(datastore string) (map[string]*Job, map[string]*notifiers.Notification, error) {
+	// split[0] is datastoreType; //split[1] is connection string
+	split := strings.SplitN(datastore, ":", 2)
+	if len(split) != 2 {
+		logrus.Fatal("Invalid Datastore Format")
+	}
+
+	switch split[0] {
 	case "filesystem":
-		return loadFromFilesystem(path)
+		return loadFromFilesystem(split[1])
 	}
 	panic("Could not load jobs")
 }

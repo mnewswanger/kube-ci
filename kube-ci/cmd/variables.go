@@ -5,9 +5,9 @@ import (
 )
 
 type flags struct {
-	configDirectory string
-	listenPort      uint16
-	verbosity       int
+	datastore  string
+	listenPort uint16
+	verbosity  int
 }
 
 var commandLineFlags = flags{}
