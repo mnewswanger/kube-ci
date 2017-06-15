@@ -4,7 +4,7 @@ The `notify` endpoint tells the receiving node to execute the given `notifier`. 
 
 ## URL Pattern ##
 
-### POST - /notify/<notifierId\>/<jobId\>/ ###
+### POST - /api/v1/notify/<notifierId\>/<jobId\>/ ###
 
 ## Input ##
 

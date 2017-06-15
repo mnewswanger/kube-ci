@@ -1,10 +1,10 @@
-# Trigger Jobs #
+# Inbound Webhook #
 
 The `trigger jobs` endpoint is set up as the base entrypoint for job interaction with KubeCI.
 
 ## URL Pattern ##
 
-### POST - / ###
+### POST - /api/v1/hook ###
 
 ## Input ##
 

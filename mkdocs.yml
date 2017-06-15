@@ -8,13 +8,16 @@ pages:
     - Steps: jobs/steps.md
     - Notifiers: jobs/notifiers.md
   - Endpoints:
-    - Overview: endpoints/index.md
-    - Trigger Jobs: endpoints/trigger-jobs.md
-    - Job Callback: endpoints/job-callback.md
-    - Healthz: endpoints/healthz.md
-    - Metrics: endpoints/metrics.md
-    - Execute Job: endpoints/execute-job.md
-    - Notify: endpoints/notify.md
+    - External:
+      - Overview: endpoints/external/index.md
+      - Healthz: endpoints/external/healthz.md
+      - Inbound Webhook: endpoints/external/inbound-webhook.md
+      - Job Callback: endpoints/external/job-callback.md
+      - Metrics: endpoints/external/metrics.md
+    - Internal:
+      - Overview: endpoints/internal/index.md
+      - Execute Job: endpoints/internal/execute-job.md
+      - Notify: endpoints/internal/notify.md
   - Todo: todo.md
 theme: material
 markdown_extensions:

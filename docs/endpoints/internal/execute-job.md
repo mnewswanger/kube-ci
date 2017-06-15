@@ -4,7 +4,7 @@ The `execute job` endpoint tells the receiving node to execute the given `jobId`
 
 ## URL Pattern ##
 
-### POST - /execute-job/<jobId\>/ ###
+### POST - /api/v1/execute-job/<jobId\>/ ###
 
 ## Input ##
 

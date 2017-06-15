@@ -4,7 +4,7 @@ The `job callback` endpoint is set up as a receive hook to be triggered when the
 
 ## URL Pattern ##
 
-### POST /callback/<callbackToken\>/ ###
+### POST /api/v1/callback/<callbackToken\>/ ###
 
 ## Input ##
 
