@@ -1,6 +1,7 @@
 site_name: KubeCI - Kubernetes Continuous Integration and Delivery
 pages:
   - KubeCI Overview: index.md
+  - Quick Start: quick-start.md
   - Architecture: architecture.md
   - Jobs:
     - Overview: jobs/index.md
