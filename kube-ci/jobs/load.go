@@ -19,11 +19,30 @@ func Load(datastore string) (map[string]*Job, map[string]*notifiers.Notification
 		logrus.Fatal("Invalid Datastore Format")
 	}
 
+	var jobs map[string]*Job
+	var notifications map[string]*notifiers.Notification
+	var err error
 	switch split[0] {
 	case "filesystem":
-		return loadFromFilesystem(split[1])
+		jobs, notifications, err = loadFromFilesystem(split[1])
+	default:
+		panic("Datastore not implented: " + split[0])
 	}
-	panic("Could not load jobs")
+	if err == nil {
+		// Jobs and notifiers loaded successfully; validate and map them
+		for _, j := range jobs {
+			for _, n := range j.Notifiers {
+				for _, t := range n {
+					err = t.Bind(notifications)
+					if err != nil {
+						logrus.Error(err)
+						break
+					}
+				}
+			}
+		}
+	}
+	return jobs, notifications, err
 }
 
 // Load from the filesystem

@@ -1,6 +1,6 @@
 package notifiers
 
 type notifier interface {
-	fire(NotificationProperties) error
-	validates(NotificationProperties) bool
+	fire(notificationProperties) error
+	validates(notificationProperties) bool
 }

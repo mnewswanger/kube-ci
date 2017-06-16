@@ -33,7 +33,6 @@ func (rs *Ruleset) Matches(labels map[string]string) bool {
 		defaultValue = true
 	}
 	for _, r := range rs.Rules {
-		logger.Debug()
 		if r.Matches(labels) {
 			if rs.Mode == "any" {
 				return true

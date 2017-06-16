@@ -31,48 +31,42 @@ steps:
       retries: 3
       timeout: 3600
 notifiers:
-  - name: Send Slack notification
-    notifier: example.slack-example
+  success:
+  - name: Send RocketChat notification
+    notifier: generic.rocketchat
     arguments:
-      key_1: value
-      key_2: value
-    events: complete
-  - name: Webhook on failure
-    notifier: examples.generic-webhook
-    arguments:
-      key_1: value
-      key_2: value
-    events: failure
+      channel: "site-reliability-engineering"
+    events: success
 rules:
   mode: all
   name: push_to_dev_or_master_on_any_project
   rules:
-  - invert_match: false
-    label_name: git.event
-    label_value: push
-    match_mode: exact
-    name: git_push
-  - invert_match: true
-    label_name: git.project.name
-    label_value: ""
-    match_mode: exact
-    name: git_request
-  - invert_match: true
-    label_name: git.target_commit
-    label_value: ""
-    match_mode: exact
-    name: gitlab_project_foo
-  - mode: any
-    name: Branch master or develop
-    rules:
     - invert_match: false
-      label_name: git.branch
-      label_value: develop
+      label_name: git.event
+      label_value: push
       match_mode: exact
-      name: gitlab_branch_develop
-    - invert_match: false
-      label_name: git.branch
-      label_value: master
+      name: git_push
+    - invert_match: true
+      label_name: git.project.name
+      label_value: ""
       match_mode: exact
-      name: gitlab_branch_master
+      name: git_request
+    - invert_match: true
+      label_name: git.target_commit
+      label_value: ""
+      match_mode: exact
+      name: gitlab_project_foo
+    - mode: any
+      name: Branch master or develop
+      rules:
+        - invert_match: false
+          label_name: git.branch
+          label_value: develop
+          match_mode: exact
+          name: gitlab_branch_develop
+        - invert_match: false
+          label_name: git.branch
+          label_value: master
+          match_mode: exact
+          name: gitlab_branch_master
 ...

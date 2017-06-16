@@ -17,7 +17,7 @@ type Step struct {
 }
 
 // Execute provides a method to run the step
-func (s *Step) Execute(labels map[string]string) {
+func (s *Step) Execute(labels map[string]string) error {
 	fields := logrus.Fields{
 		"step_name": s.Name,
 	}
@@ -33,4 +33,5 @@ func (s *Step) Execute(labels map[string]string) {
 	}
 	wg.Wait()
 	logrus.WithFields(fields).Info("Step complete")
+	return nil
 }

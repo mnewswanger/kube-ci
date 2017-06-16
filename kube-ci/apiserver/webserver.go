@@ -13,14 +13,14 @@ import (
 )
 
 // StartWebserver starts an API Web Server
-func StartWebserver(datastore string, port uint16, verbosity uint8) {
+func StartWebserver(datastoreString string, port uint16, verbosity uint8) {
 	// Prepare application for run
 	t := time.Now()
 	if logger == nil {
 		logger = logrus.New()
 	}
 	logger.Level = logrus.DebugLevel
-	healthy := true
+	datastore = datastoreString
 
 	// Configure Gin
 	if verbosity == 0 {
@@ -34,19 +34,15 @@ func StartWebserver(datastore string, port uint16, verbosity uint8) {
 		panic(err)
 	}
 
+	applicationIsHealthy = true
+
 	// Log the initialization
 	logger.WithFields(logrus.Fields{
 		"elapsed_µs": time.Since(t).Nanoseconds() / 1000,
 	}).Info("Initialization complete")
 
 	// Set up listen endpoints
-	r.GET("/healthz", func(c *gin.Context) {
-		if healthy {
-			c.String(200, `{"status": "up"}`)
-		} else {
-			c.String(500, `{"status": "down"}`)
-		}
-	})
+	r.GET("/healthz", getHealthz)
 
 	r.GET("/metrics", func(c *gin.Context) {
 		c.String(200, "namespace.value 0\n")
@@ -131,11 +127,7 @@ func StartWebserver(datastore string, port uint16, verbosity uint8) {
 					name      string
 				}{}
 				for _, j := range configuredJobs {
-					running, err := j.Trigger(labels)
-					if err != nil {
-						logger.Error(err)
-					}
-					if running {
+					if j.ShouldRun(labels) {
 						triggeredJobs = append(triggeredJobs, struct {
 							namespace string
 							name      string
@@ -143,6 +135,10 @@ func StartWebserver(datastore string, port uint16, verbosity uint8) {
 							namespace: j.Namespace,
 							name:      j.Name,
 						})
+
+						go func() {
+							j.Trigger(labels)
+						}()
 					}
 				}
 
