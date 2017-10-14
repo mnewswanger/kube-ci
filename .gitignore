@@ -1,0 +1,3 @@
+config/jobs/*.yml
+config/notifiers/*.yml
+
