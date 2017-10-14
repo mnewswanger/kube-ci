@@ -5,9 +5,15 @@ import (
 )
 
 var getHealthz = func(c *gin.Context) {
-	if applicationIsHealthy {
-		c.String(200, `{"status": "up"}`)
+	if !initialized {
+		c.JSON(503, map[string]string{"status": "initializing"})
+	} else if applicationIsHealthy {
+		c.JSON(200, map[string]string{"status": "up"})
 	} else {
-		c.String(500, `{"status": "down"}`)
+		c.JSON(500, map[string]string{"status": "down"})
 	}
+}
+
+var getMetrics = func(c *gin.Context) {
+	c.String(200, "namespace.value 0\n")
 }

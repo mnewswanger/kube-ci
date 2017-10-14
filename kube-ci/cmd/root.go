@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -26,3 +27,13 @@ func Execute() {
 func init() {
 	RootCmd.PersistentFlags().CountVarP(&commandLineFlags.verbosity, "verbosity", "v", "Verbosity")
 }
+
+type flags struct {
+	datastore  string
+	listenPort uint16
+	verbosity  int
+}
+
+var commandLineFlags = flags{}
+
+var logger = logrus.New()

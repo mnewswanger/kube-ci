@@ -5,7 +5,7 @@
 * [ ] Notifications
     * [ ] Add templating to common properties
 * [ ] Update datastores
-    * [ ] Migrate --datastore to --config-datastore
+    * [x] Migrate --datastore to --config-datastore
     * [ ] Add --state-datastore
     * [ ] Add --logging-target (default stderr)
 * [ ] Secret Mapping
@@ -13,6 +13,7 @@
 ## Additional Functionality ##
 
 * [ ] Job Actions
+    * [x] Synchronous web requests
     * [ ] Asynchronous web requests
     * [ ] Kubernetes Job Runs
 * [ ] Add rules to steps

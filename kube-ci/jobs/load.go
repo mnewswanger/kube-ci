@@ -47,8 +47,7 @@ func Load(datastore string) (map[string]*Job, map[string]*notifiers.Notification
 
 // Load from the filesystem
 func loadFromFilesystem(path string) (map[string]*Job, map[string]*notifiers.Notification, error) {
-	fs := filesystem.Filesystem{}
-	if !fs.IsDirectory(path) {
+	if !filesystem.IsDirectory(path) {
 		return nil, nil, errors.New("Specified path (\"" + path + "\") does not exist or is not accessible")
 	}
 	n, err := loadNotificationsFromFilesystem(path + "/notifiers")
@@ -63,11 +62,10 @@ func loadFromFilesystem(path string) (map[string]*Job, map[string]*notifiers.Not
 }
 
 func loadJobsFromFilesystem(path string) (map[string]*Job, error) {
-	var fs = filesystem.Filesystem{}
-	if !fs.IsDirectory(path) {
+	if !filesystem.IsDirectory(path) {
 		return nil, errors.New("Specified path (\"" + path + "\") does not exist or is not accessible")
 	}
-	directoryContents, err := fs.GetDirectoryContents(path)
+	directoryContents, err := filesystem.GetDirectoryContents(path)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +73,7 @@ func loadJobsFromFilesystem(path string) (map[string]*Job, error) {
 	for _, f := range directoryContents {
 		job := &Job{}
 		f = path + "/" + f
-		fc, err := fs.LoadFileBytes(f)
+		fc, err := filesystem.LoadFileBytes(f)
 		if err != nil {
 			return nil, err
 		}
@@ -90,11 +88,10 @@ func loadJobsFromFilesystem(path string) (map[string]*Job, error) {
 }
 
 func loadNotificationsFromFilesystem(path string) (map[string]*notifiers.Notification, error) {
-	var fs = filesystem.Filesystem{}
-	if !fs.IsDirectory(path) {
+	if !filesystem.IsDirectory(path) {
 		return nil, errors.New("Specified path (\"" + path + "\") does not exist or is not accessible")
 	}
-	directoryContents, err := fs.GetDirectoryContents(path)
+	directoryContents, err := filesystem.GetDirectoryContents(path)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +99,7 @@ func loadNotificationsFromFilesystem(path string) (map[string]*notifiers.Notific
 	n := map[string]*notifiers.Notification{}
 	for _, f := range directoryContents {
 		f = path + "/" + f
-		fc, err := fs.LoadFileBytes(f)
+		fc, err := filesystem.LoadFileBytes(f)
 		if err != nil {
 			return nil, err
 		}

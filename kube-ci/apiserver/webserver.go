@@ -2,15 +2,33 @@ package apiserver
 
 import (
 	"strconv"
-	"strings"
 	"time"
 
-	"github.com/ghodss/yaml"
+	"go.mikenewswanger.com/kube-ci/kube-ci/jobs/notifiers"
+
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 
 	"go.mikenewswanger.com/kube-ci/kube-ci/jobs"
 )
+
+var applicationIsHealthy bool
+var datastore string
+var configuredJobs map[string]*jobs.Job
+var configuredNotifications map[string]*notifiers.Notification
+var initialized bool
+var logger *logrus.Logger
+var verbosity uint8
+
+// SetLogger sets the logger for the package
+func SetLogger(l *logrus.Logger) {
+	logger = l
+}
+
+// SetVerbosity sets the verbosity of the package
+func SetVerbosity(v uint8) {
+	verbosity = v
+}
 
 // StartWebserver starts an API Web Server
 func StartWebserver(datastoreString string, port uint16, verbosity uint8) {
@@ -21,6 +39,7 @@ func StartWebserver(datastoreString string, port uint16, verbosity uint8) {
 	}
 	logger.Level = logrus.DebugLevel
 	datastore = datastoreString
+	applicationIsHealthy = true
 
 	// Configure Gin
 	if verbosity == 0 {
@@ -28,124 +47,36 @@ func StartWebserver(datastoreString string, port uint16, verbosity uint8) {
 	}
 	r := gin.Default()
 
-	// Pre-cache jobs
-	configuredJobs, notifications, err := jobs.Load(datastore)
-	if err != nil {
-		panic(err)
-	}
-
-	applicationIsHealthy = true
-
-	// Log the initialization
-	logger.WithFields(logrus.Fields{
-		"elapsed_µs": time.Since(t).Nanoseconds() / 1000,
-	}).Info("Initialization complete")
-
 	// Set up listen endpoints
 	r.GET("/healthz", getHealthz)
-
-	r.GET("/metrics", func(c *gin.Context) {
-		c.String(200, "namespace.value 0\n")
-	})
+	r.GET("/metrics", getMetrics)
 
 	api := r.Group("/api")
 	{
 		v1 := api.Group("/v1")
 		{
-			v1.GET("/jobs", func(c *gin.Context) {
-				c.JSON(200, configuredJobs)
-			})
-
-			v1.GET("/notifiers", func(c *gin.Context) {
-				c.JSON(200, notifications)
-			})
-
-			v1.GET("/reload", func(c *gin.Context) {
-				configuredJobs, notifications, err = jobs.Load(datastore)
-				if err != nil {
-					c.String(500, `{"error": "Could not reload configuration"}`)
-				}
-				c.String(200, `{"error": null}`)
-			})
-
-			v1.POST("/hook", func(c *gin.Context) {
-				d := map[string]interface{}{}
-				err := c.Bind(&d)
-				if err != nil {
-					logger.Error(err)
-				}
-				var labels = map[string]string{}
-
-				// Attempt to add git labels from gitlab webhook structure
-				ref := getStringFromInterface(d, "ref")
-				tag := strings.TrimPrefix(ref, "refs/tags/")
-				if tag == ref {
-					tag = ""
-				}
-				branch := strings.TrimPrefix(ref, "refs/heads/")
-				if branch == ref {
-					branch = ""
-				}
-				startCommit := getStringFromInterface(d, "before")
-				if startCommit == "0000000000000000000000000000000000000000" {
-					startCommit = ""
-				}
-				targetCommit := getStringFromInterface(d, "after")
-				if targetCommit == "0000000000000000000000000000000000000000" {
-					targetCommit = ""
-				}
-
-				labels["git.event"] = getStringFromInterface(d, "event_name")
-				labels["git.branch"] = branch
-				labels["git.tag"] = tag
-				labels["git.start_commit"] = startCommit
-				labels["git.target_commit"] = targetCommit
-				labels["git.project.avatar_url"] = getStringFromInterface(d, "project", "avatar_url")
-				labels["git.project.name"] = getStringFromInterface(d, "project", "name")
-				labels["git.project.namespace"] = getStringFromInterface(d, "project", "namespace")
-				labels["git.repository.url_http"] = getStringFromInterface(d, "repository", "git_http_url")
-				labels["git.repository.url_ssh"] = getStringFromInterface(d, "repository", "git_ssh_url")
-				labels["git.user.avatar_url"] = getStringFromInterface(d, "user_avatar")
-				labels["git.user.email"] = getStringFromInterface(d, "user_email")
-				labels["git.user.name"] = getStringFromInterface(d, "user_name")
-
-				switch verbosity {
-				case 5:
-					y, _ := yaml.Marshal(d)
-					logger.Debug(string(y))
-					fallthrough
-				case 4:
-					labelFields := logrus.Fields{}
-					for k, v := range labels {
-						labelFields[k] = v
-					}
-					logger.WithFields(labelFields).Info("Processed Labels")
-				}
-
-				triggeredJobs := []struct {
-					namespace string
-					name      string
-				}{}
-				for _, j := range configuredJobs {
-					if j.ShouldRun(labels) {
-						triggeredJobs = append(triggeredJobs, struct {
-							namespace string
-							name      string
-						}{
-							namespace: j.Namespace,
-							name:      j.Name,
-						})
-
-						go func() {
-							j.Trigger(labels)
-						}()
-					}
-				}
-
-				c.String(200, `{"error":null,"message":"Request processed succesfully"}`)
-			})
+			v1.GET("/jobs", v1GetJobs)
+			v1.GET("/notifiers", v1GetNotifiers)
+			v1.GET("/reload", v1UpdateConfiguration)
+			v1.POST("/hook", v1Fire)
 		}
 	}
+
+	go func() {
+		// Pre-cache jobs
+		err := loadJobsAndNotifications()
+		if err != nil {
+			applicationIsHealthy = false
+			panic(err)
+		}
+
+		initialized = true
+
+		// Log the initialization
+		logger.WithFields(logrus.Fields{
+			"elapsed_µs": time.Since(t).Nanoseconds() / 1000,
+		}).Info("Initialization complete")
+	}()
 
 	// Listen for requests
 	r.Run(":" + strconv.Itoa(int(port)))
@@ -164,4 +95,9 @@ func getStringFromInterface(i map[string]interface{}, keys ...string) string {
 		}
 	}
 	return ""
+}
+
+func loadJobsAndNotifications() (err error) {
+	configuredJobs, configuredNotifications, err = jobs.Load(datastore)
+	return
 }
