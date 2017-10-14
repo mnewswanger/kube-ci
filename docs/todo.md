@@ -16,7 +16,9 @@
     * [x] Synchronous web requests
     * [ ] Asynchronous web requests
     * [ ] Kubernetes Job Runs
-* [ ] Add rules to steps
+* [ ] Steps
+    * [ ] Add rules
+    * [ ] Add notifiers
 * [ ] Logging
     * [ ] Graylog
 * [ ] Access Control

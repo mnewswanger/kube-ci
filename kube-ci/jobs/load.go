@@ -12,37 +12,44 @@ import (
 )
 
 // Load imports jobs from a datastore
-func Load(datastore string) (map[string]*Job, map[string]*notifiers.Notification, error) {
+func Load(datastore string) (jobs map[string]*Job, notifications map[string]*notifiers.Notification, err error) {
 	// split[0] is datastoreType; //split[1] is connection string
 	split := strings.SplitN(datastore, ":", 2)
 	if len(split) != 2 {
 		logrus.Fatal("Invalid Datastore Format")
 	}
 
-	var jobs map[string]*Job
-	var notifications map[string]*notifiers.Notification
-	var err error
 	switch split[0] {
 	case "filesystem":
 		jobs, notifications, err = loadFromFilesystem(split[1])
 	default:
-		panic("Datastore not implented: " + split[0])
+		err = errors.New("Configuration Datastore is not supported")
+		return
 	}
-	if err == nil {
-		// Jobs and notifiers loaded successfully; validate and map them
-		for _, j := range jobs {
-			for _, n := range j.Notifiers {
-				for _, t := range n {
-					err = t.Bind(notifications)
-					if err != nil {
-						logrus.Error(err)
-						break
-					}
+	if err != nil {
+		return
+	}
+	// Register notifications
+	for _, n := range notifications {
+		err = n.Register()
+		if err != nil {
+			return
+		}
+	}
+	// Jobs and notifiers loaded successfully; validate and map them
+	// Event fire type doesn't matter at this stage, so just focus on the notifications themselves
+	for _, j := range jobs {
+		for _, n := range j.Notifiers {
+			for _, t := range n {
+				err = t.Bind(notifications)
+				if err != nil {
+					logrus.Error(err)
+					break
 				}
 			}
 		}
 	}
-	return jobs, notifications, err
+	return
 }
 
 // Load from the filesystem
@@ -71,6 +78,9 @@ func loadJobsFromFilesystem(path string) (map[string]*Job, error) {
 	}
 	j := map[string]*Job{}
 	for _, f := range directoryContents {
+		if f == "readme.md" {
+			continue
+		}
 		job := &Job{}
 		f = path + "/" + f
 		fc, err := filesystem.LoadFileBytes(f)
@@ -98,6 +108,9 @@ func loadNotificationsFromFilesystem(path string) (map[string]*notifiers.Notific
 	var notification *notifiers.Notification
 	n := map[string]*notifiers.Notification{}
 	for _, f := range directoryContents {
+		if f == "readme.md" {
+			continue
+		}
 		f = path + "/" + f
 		fc, err := filesystem.LoadFileBytes(f)
 		if err != nil {

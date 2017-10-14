@@ -21,8 +21,24 @@ type Notification struct {
 }
 
 // Fire sends the specified notification
-func (n Notification) fire() error {
-	var err error
+func (n Notification) fire() (err error) {
+	err = n.handler.dataValidates(n.Properties)
+
+	if err != nil {
+		n.setStatus("failed")
+		return
+	}
+
+	n.setStatus("pending")
+	err = n.handler.fire(n.Properties)
+	if err != nil {
+		return
+	}
+	n.setStatus("succeeded")
+	return
+}
+
+func (n *Notification) Register() error {
 	if n.Logger == nil {
 		n.Logger = logrus.New()
 		switch n.Verbosity {
@@ -46,35 +62,31 @@ func (n Notification) fire() error {
 	if n.handler == nil {
 		switch n.Type {
 		case "webhook":
-			n.handler = &webhookNotifier{}
-			break
+			n.handler = &webhookNotifier{
+				rawProperties: n.Properties,
+			}
+			return n.handler.validates()
 		default:
 			n.Logger.WithFields(logrus.Fields{
 				"name": n.Name,
 				"type": n.Type,
 			}).Error("Invalid type")
-			err = errors.New("Invalid notification type provided: " + n.Type)
+			return errors.New("Invalid notification type provided: " + n.Type)
 		}
 	}
-
-	if err == nil {
-		if n.handler.validates(n.Properties) {
-			n.setStatus("pending")
-			err = n.handler.fire(n.Properties)
-			if err == nil {
-				n.setStatus("succeeded")
-				return err
-			}
-		} else {
-			err = errors.New("Notification validation failed")
-		}
-	}
-
-	n.setStatus("failed")
-	return err
+	return nil
 }
 
 func (n Notification) setStatus(status string) {
 }
 
 type notificationProperties map[string]interface{}
+
+type notifier interface {
+	// Validate notification property data
+	dataValidates(notificationProperties) error
+	// Fire the notification
+	fire(notificationProperties) error
+	// Validate the notification properties (passed via rawProperties)
+	validates() error
+}

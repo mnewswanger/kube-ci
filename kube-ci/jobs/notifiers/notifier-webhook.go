@@ -4,15 +4,25 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	"github.com/sirupsen/logrus"
 )
 
 type webhookNotifier struct {
-	cache map[string]string
+	url           string
+	method        string
+	body          string
+	headers       map[string]string
+	rawProperties notificationProperties
 }
 
 func (n *webhookNotifier) fire(np notificationProperties) error {
+	return nil
+
 	var req *http.Request
 	var err error
+
+	logrus.Info("Notification Firing")
 
 	// // Create the HTTP request
 	// switch t.Arguments["http_method"] {
@@ -22,7 +32,7 @@ func (n *webhookNotifier) fire(np notificationProperties) error {
 	// if err != nil {
 	// 	return err
 	// }
-	req, err = http.NewRequest("POST", "https://rc.clarkinc.biz/hooks/5hh6xquqfcByp47ac/wXu5GsakusR7M6k7Zo4wTH7ZFwfy9R55Qzk6gZPWotTbFzXm", strings.NewReader(`{"username":"[example-job]","text":":+1: The job succeeded}`))
+	req, err = http.NewRequest("POST", "", strings.NewReader(`{"username":"[example-job]","text":":+1: The job succeeded}`))
 
 	client := &http.Client{}
 
@@ -35,12 +45,15 @@ func (n *webhookNotifier) fire(np notificationProperties) error {
 
 	ioutil.ReadAll(resp.Body)
 
+	logrus.Info("Notification Fired")
+
 	return nil
 }
 
-func (n *webhookNotifier) validates(np notificationProperties) bool {
-	// Reset the cache
-	n.cache = map[string]string{}
+func (n *webhookNotifier) dataValidates(np notificationProperties) error {
+	return nil
+}
 
-	return true
+func (n *webhookNotifier) validates() error {
+	return nil
 }
