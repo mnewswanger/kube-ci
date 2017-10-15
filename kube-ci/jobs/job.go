@@ -10,49 +10,57 @@ import (
 type Job struct {
 	Name      string                          `json:"name"`
 	Namespace string                          `json:"namespace"`
-	Labels    map[string]string               `json:"labels"`
 	Notifiers map[string][]*notifiers.Trigger `json:"notifiers"`
 	Rules     rules.Ruleset                   `json:"rules"`
 	Steps     []Step                          `json:"steps"`
 }
 
-// ShouldRun returns true when the specified job should be triggered
-func (j *Job) ShouldRun(labels map[string]string) bool {
-	return j.Rules.Matches(labels)
-}
+// Labels are sets of key / value pairs passed in by or derived from the reqeust
+type Labels map[string]string
 
 // Trigger executes the job if it should be run
-func (j *Job) Trigger(labels map[string]string) error {
-	fields := logrus.Fields{
-		"job_namespace": j.Namespace,
-		"job_name":      j.Name,
+func (j *Job) Trigger(requestLabels Labels) (err error) {
+	if !j.shouldRun(requestLabels) {
+		return
 	}
-	logrus.WithFields(fields).Info("Running Job")
 
-	var err error
-	for _, s := range j.Steps {
-		err = s.Execute(labels)
-		if err != nil {
-			break
+	// Run the job in a new thread
+	go func(requestLabels Labels) {
+		fields := logrus.Fields{
+			"job_namespace": j.Namespace,
+			"job_name":      j.Name,
 		}
-	}
+		logrus.WithFields(fields).Info("Running Job")
+		j.fireNotifiers("start")
 
-	// Handle Job Complete
-	logrus.WithFields(fields).Debug("Job Complete")
-	j.fireNotifiers("Complete")
-	if err == nil {
-		logrus.WithFields(fields).Info("Job Succeeded")
-		j.fireNotifiers("success")
-	} else {
-		// Handle Job Failure
-		logrus.WithFields(fields).Info("Job Failed")
-		j.fireNotifiers("failure")
-	}
-	return nil
+		for _, s := range j.Steps {
+			err = s.Execute(requestLabels)
+			if err != nil {
+				break
+			}
+		}
+
+		// Handle Job Complete
+		logrus.WithFields(fields).Debug("Job Complete")
+		j.fireNotifiers("complete")
+		if err == nil {
+			logrus.WithFields(fields).Info("Job Succeeded")
+			j.fireNotifiers("success")
+		} else {
+			// Handle Job Failure
+			logrus.WithFields(fields).Info("Job Failed")
+			j.fireNotifiers("failure")
+		}
+	}(requestLabels)
+	return
 }
 
 func (j *Job) fireNotifiers(event string) {
 	for _, n := range j.Notifiers[event] {
 		n.Fire()
 	}
+}
+
+func (j *Job) shouldRun(labels map[string]string) bool {
+	return j.Rules.Matches(labels)
 }

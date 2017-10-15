@@ -68,7 +68,7 @@ func loadFromFilesystem(path string) (map[string]*Job, map[string]*notifiers.Not
 	return j, n, nil
 }
 
-func loadJobsFromFilesystem(path string) (map[string]*Job, error) {
+func loadJobsFromFilesystem(path string) (jobs map[string]*Job, err error) {
 	if !filesystem.IsDirectory(path) {
 		return nil, errors.New("Specified path (\"" + path + "\") does not exist or is not accessible")
 	}
@@ -76,13 +76,23 @@ func loadJobsFromFilesystem(path string) (map[string]*Job, error) {
 	if err != nil {
 		return nil, err
 	}
-	j := map[string]*Job{}
+	jobs = map[string]*Job{}
 	for _, f := range directoryContents {
-		if f == "readme.md" {
+		if strings.HasPrefix(f, ".") || f == "readme.md" {
 			continue
 		}
 		job := &Job{}
 		f = path + "/" + f
+		if filesystem.IsDirectory(f) {
+			j, err := loadJobsFromFilesystem(f)
+			if err != nil {
+				return nil, err
+			}
+			for k, v := range j {
+				jobs[k] = v
+			}
+			continue
+		}
 		fc, err := filesystem.LoadFileBytes(f)
 		if err != nil {
 			return nil, err
@@ -91,13 +101,13 @@ func loadJobsFromFilesystem(path string) (map[string]*Job, error) {
 		if err != nil {
 			return nil, err
 		}
-		j[job.Namespace+"."+job.Name] = job
+		jobs[job.Namespace+"."+job.Name] = job
 	}
 
-	return j, nil
+	return
 }
 
-func loadNotificationsFromFilesystem(path string) (map[string]*notifiers.Notification, error) {
+func loadNotificationsFromFilesystem(path string) (notifications map[string]*notifiers.Notification, err error) {
 	if !filesystem.IsDirectory(path) {
 		return nil, errors.New("Specified path (\"" + path + "\") does not exist or is not accessible")
 	}
@@ -106,12 +116,22 @@ func loadNotificationsFromFilesystem(path string) (map[string]*notifiers.Notific
 		return nil, err
 	}
 	var notification *notifiers.Notification
-	n := map[string]*notifiers.Notification{}
+	notifications = map[string]*notifiers.Notification{}
 	for _, f := range directoryContents {
-		if f == "readme.md" {
+		if strings.HasPrefix(f, ".") || f == "readme.md" {
 			continue
 		}
 		f = path + "/" + f
+		if filesystem.IsDirectory(f) {
+			n, err := loadNotificationsFromFilesystem(f)
+			if err != nil {
+				return nil, err
+			}
+			for k, v := range n {
+				notifications[k] = v
+			}
+			continue
+		}
 		fc, err := filesystem.LoadFileBytes(f)
 		if err != nil {
 			return nil, err
@@ -120,8 +140,8 @@ func loadNotificationsFromFilesystem(path string) (map[string]*notifiers.Notific
 		if err != nil {
 			return nil, err
 		}
-		n[notification.Namespace+"."+notification.Name] = notification
+		notifications[notification.Namespace+"."+notification.Name] = notification
 	}
 
-	return n, nil
+	return
 }

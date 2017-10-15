@@ -6,6 +6,8 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+
+	"go.mikenewswanger.com/kube-ci/kube-ci/jobs"
 )
 
 var v1Fire = func(c *gin.Context) {
@@ -16,7 +18,7 @@ var v1Fire = func(c *gin.Context) {
 	if err != nil {
 		logger.Error(err)
 	}
-	var labels = map[string]string{}
+	var labels = jobs.Labels{}
 
 	// Attempt to add git labels from gitlab webhook structure
 	ref := getStringFromInterface(d, "ref")
@@ -64,24 +66,8 @@ var v1Fire = func(c *gin.Context) {
 		logger.WithFields(labelFields).Info("Processed Labels")
 	}
 
-	triggeredJobs := []struct {
-		namespace string
-		name      string
-	}{}
 	for _, j := range configuredJobs {
-		if j.ShouldRun(labels) {
-			triggeredJobs = append(triggeredJobs, struct {
-				namespace string
-				name      string
-			}{
-				namespace: j.Namespace,
-				name:      j.Name,
-			})
-
-			go func() {
-				j.Trigger(labels)
-			}()
-		}
+		j.Trigger(labels)
 	}
 
 	c.String(200, `{"error":null,"message":"Request processed succesfully"}`)
