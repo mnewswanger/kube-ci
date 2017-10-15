@@ -38,6 +38,7 @@ func (n Notification) fire() (err error) {
 	return
 }
 
+// Register a notification to the system
 func (n *Notification) Register() error {
 	if n.Logger == nil {
 		n.Logger = logrus.New()

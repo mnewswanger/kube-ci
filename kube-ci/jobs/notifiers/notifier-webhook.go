@@ -17,23 +17,12 @@ type webhookNotifier struct {
 }
 
 func (n *webhookNotifier) fire(np notificationProperties) error {
-	return nil
-
-	var req *http.Request
-	var err error
-
 	logrus.Info("Notification Firing")
 
-	// // Create the HTTP request
-	// switch t.Arguments["http_method"] {
-	// default:
-	// 	req, err = http.NewRequest("GET", t.Arguments["url"], nil)
-	// }
-	// if err != nil {
-	// 	return err
-	// }
-	req, err = http.NewRequest("POST", "", strings.NewReader(`{"username":"[example-job]","text":":+1: The job succeeded}`))
-
+	req, err := http.NewRequest(n.method, n.url, strings.NewReader(n.body))
+	for header, value := range n.headers {
+		req.Header.Set(header, value)
+	}
 	client := &http.Client{}
 
 	// Execute the request
@@ -54,6 +43,14 @@ func (n *webhookNotifier) dataValidates(np notificationProperties) error {
 	return nil
 }
 
-func (n *webhookNotifier) validates() error {
-	return nil
+func (n *webhookNotifier) validates() (err error) {
+	n.url = n.rawProperties["url"].(string)
+	n.method = n.rawProperties["method"].(string)
+	n.body = n.rawProperties["body"].(string)
+	h := n.rawProperties["headers"].(map[string]interface{})
+	n.headers = map[string]string{}
+	for header, value := range h {
+		n.headers[header] = value.(string)
+	}
+	return
 }
