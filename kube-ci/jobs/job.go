@@ -32,7 +32,7 @@ func (j *Job) Trigger(requestLabels Labels) (err error) {
 			"job_name":      j.Name,
 		}
 		logrus.WithFields(fields).Info("Running Job")
-		j.fireNotifiers("start")
+		j.fireNotifiers("start", requestLabels)
 
 		for _, s := range j.Steps {
 			err = s.Execute(requestLabels)
@@ -43,22 +43,30 @@ func (j *Job) Trigger(requestLabels Labels) (err error) {
 
 		// Handle Job Complete
 		logrus.WithFields(fields).Debug("Job Complete")
-		j.fireNotifiers("complete")
+		j.fireNotifiers("complete", requestLabels)
 		if err == nil {
 			logrus.WithFields(fields).Info("Job Succeeded")
-			j.fireNotifiers("success")
+			j.fireNotifiers("success", requestLabels)
 		} else {
 			// Handle Job Failure
 			logrus.WithFields(fields).Info("Job Failed")
-			j.fireNotifiers("failure")
+			j.fireNotifiers("failure", requestLabels)
 		}
 	}(requestLabels)
 	return
 }
 
-func (j *Job) fireNotifiers(event string) {
+func (j *Job) fireNotifiers(event string, requestLabels Labels) {
+	m := notifiers.JobProperties{
+		Event:         event,
+		Name:          j.Name,
+		Namespace:     j.Namespace,
+		RequestLabels: requestLabels,
+	}
 	for _, n := range j.eventNotifications[event] {
-		n.Fire()
+		go func(n *notifiers.Trigger, m notifiers.JobProperties) {
+			n.Fire(m)
+		}(n, m)
 	}
 }
 

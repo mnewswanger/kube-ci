@@ -21,17 +21,11 @@ type Notification struct {
 }
 
 // Fire sends the specified notification
-func (n Notification) fire() (err error) {
-	err = n.handler.dataValidates(n.Properties)
-
+func (n Notification) fire(m triggerMetadata) (err error) {
+	n.setStatus("pending")
+	err = n.handler.fire(m)
 	if err != nil {
 		n.setStatus("failed")
-		return
-	}
-
-	n.setStatus("pending")
-	err = n.handler.fire(n.Properties)
-	if err != nil {
 		return
 	}
 	n.setStatus("succeeded")
@@ -63,10 +57,8 @@ func (n *Notification) Register() error {
 	if n.handler == nil {
 		switch n.Type {
 		case "webhook":
-			n.handler = &webhookNotifier{
-				rawProperties: n.Properties,
-			}
-			return n.handler.validates()
+			n.handler = &webhookNotifier{}
+			return n.handler.initialize(n.Properties)
 		default:
 			n.Logger.WithFields(logrus.Fields{
 				"name": n.Name,
@@ -84,10 +76,8 @@ func (n Notification) setStatus(status string) {
 type notificationProperties map[string]interface{}
 
 type notifier interface {
-	// Validate notification property data
-	dataValidates(notificationProperties) error
 	// Fire the notification
-	fire(notificationProperties) error
+	fire(triggerMetadata) error
 	// Validate the notification properties (passed via rawProperties)
-	validates() error
+	initialize(notificationProperties) error
 }

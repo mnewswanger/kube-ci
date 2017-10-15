@@ -16,7 +16,7 @@ type webhookNotifier struct {
 	rawProperties notificationProperties
 }
 
-func (n *webhookNotifier) fire(np notificationProperties) error {
+func (n *webhookNotifier) fire(m triggerMetadata) error {
 	logrus.Info("Notification Firing")
 
 	req, err := http.NewRequest(n.method, n.url, strings.NewReader(n.body))
@@ -39,15 +39,11 @@ func (n *webhookNotifier) fire(np notificationProperties) error {
 	return nil
 }
 
-func (n *webhookNotifier) dataValidates(np notificationProperties) error {
-	return nil
-}
-
-func (n *webhookNotifier) validates() (err error) {
-	n.url = n.rawProperties["url"].(string)
-	n.method = n.rawProperties["method"].(string)
-	n.body = n.rawProperties["body"].(string)
-	h := n.rawProperties["headers"].(map[string]interface{})
+func (n *webhookNotifier) initialize(rawProperties notificationProperties) (err error) {
+	n.url = rawProperties["url"].(string)
+	n.method = rawProperties["method"].(string)
+	n.body = rawProperties["body"].(string)
+	h := rawProperties["headers"].(map[string]interface{})
 	n.headers = map[string]string{}
 	for header, value := range h {
 		n.headers[header] = value.(string)
