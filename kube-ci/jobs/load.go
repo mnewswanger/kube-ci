@@ -81,7 +81,6 @@ func loadJobsFromFilesystem(path string) (jobs map[string]*Job, err error) {
 		if strings.HasPrefix(f, ".") || f == "readme.md" {
 			continue
 		}
-		job := &Job{}
 		f = path + "/" + f
 		if filesystem.IsDirectory(f) {
 			j, err := loadJobsFromFilesystem(f)
@@ -97,6 +96,7 @@ func loadJobsFromFilesystem(path string) (jobs map[string]*Job, err error) {
 		if err != nil {
 			return nil, err
 		}
+		job := &Job{}
 		err = yaml.Unmarshal(fc, job)
 		if err != nil {
 			return nil, err
@@ -115,7 +115,6 @@ func loadNotificationsFromFilesystem(path string) (notifications map[string]*not
 	if err != nil {
 		return nil, err
 	}
-	var notification *notifiers.Notification
 	notifications = map[string]*notifiers.Notification{}
 	for _, f := range directoryContents {
 		if strings.HasPrefix(f, ".") || f == "readme.md" {
@@ -136,6 +135,7 @@ func loadNotificationsFromFilesystem(path string) (notifications map[string]*not
 		if err != nil {
 			return nil, err
 		}
+		notification := &notifiers.Notification{}
 		err = yaml.Unmarshal(fc, &notification)
 		if err != nil {
 			return nil, err
