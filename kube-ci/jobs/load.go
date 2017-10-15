@@ -39,13 +39,18 @@ func Load(datastore string) (jobs map[string]*Job, notifications map[string]*not
 	// Jobs and notifiers loaded successfully; validate and map them
 	// Event fire type doesn't matter at this stage, so just focus on the notifications themselves
 	for _, j := range jobs {
+		j.eventNotifications = map[string][]*notifiers.Trigger{}
 		for _, n := range j.Notifiers {
-			for _, t := range n {
-				err = t.Bind(notifications)
-				if err != nil {
-					logrus.Error(err)
-					break
+			err = n.Bind(notifications)
+			if err != nil {
+				logrus.Error(err)
+				break
+			}
+			for _, e := range n.Events {
+				if _, exists := j.eventNotifications[e]; !exists {
+					j.eventNotifications[e] = []*notifiers.Trigger{}
 				}
+				j.eventNotifications[e] = append(j.eventNotifications[e], n)
 			}
 		}
 	}

@@ -8,11 +8,12 @@ import (
 
 // Job represents a KubeCI workflow
 type Job struct {
-	Name      string                          `json:"name"`
-	Namespace string                          `json:"namespace"`
-	Notifiers map[string][]*notifiers.Trigger `json:"notifiers"`
-	Rules     rules.Ruleset                   `json:"rules"`
-	Steps     []Step                          `json:"steps"`
+	Name               string               `json:"name"`
+	Namespace          string               `json:"namespace"`
+	Notifiers          []*notifiers.Trigger `json:"notifiers"`
+	Rules              rules.Ruleset        `json:"rules"`
+	Steps              []Step               `json:"steps"`
+	eventNotifications map[string][]*notifiers.Trigger
 }
 
 // Labels are sets of key / value pairs passed in by or derived from the reqeust
@@ -56,7 +57,7 @@ func (j *Job) Trigger(requestLabels Labels) (err error) {
 }
 
 func (j *Job) fireNotifiers(event string) {
-	for _, n := range j.Notifiers[event] {
+	for _, n := range j.eventNotifications[event] {
 		n.Fire()
 	}
 }

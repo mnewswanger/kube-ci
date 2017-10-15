@@ -8,6 +8,7 @@ import (
 type Trigger struct {
 	Name           string            `json:"name"`
 	Arguments      map[string]string `json:"arguments"`
+	Events         []string          `json:"events"`
 	NotifierID     string            `json:"notifier"`
 	notifierHandle *Notification
 }
