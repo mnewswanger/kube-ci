@@ -1,7 +1,11 @@
 # Quick Start Guide #
 
-Start up a KubeCI server:
+## Basic Configuration ##
+
+Copy and personalize example `jobs` and `notifiers` from `/config/jobs/readme.md` and `/config/notifiers/readme.md` respectively.
+
+## Start Webserver ##
 
 ```
-kube-ci serve --datastore "filesystem:/path/to/config"
+kube-ci serve --config-datastore "filesystem:/<CHECKOUT_PATH>/config"
 ```
