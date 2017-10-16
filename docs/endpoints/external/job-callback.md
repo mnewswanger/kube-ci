@@ -15,7 +15,7 @@ The `job callback` endpoint is set up as a receive hook to be triggered when the
 ### Request Body ###
 
 
-```
+```json
 {
     "error": "String with error message if the job failed"
 }
@@ -25,7 +25,7 @@ The `job callback` endpoint is set up as a receive hook to be triggered when the
 
 ### Response Body ###
 
-```
+```json
 {
     "error": "Descriptive error message if something went wrong"
 }

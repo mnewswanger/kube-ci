@@ -6,6 +6,6 @@ Copy and personalize example `jobs` and `notifiers` from `/config/jobs/readme.md
 
 ## Start Webserver ##
 
-```
+```sh
 kube-ci serve --config-datastore "filesystem:/<CHECKOUT_PATH>/config"
 ```

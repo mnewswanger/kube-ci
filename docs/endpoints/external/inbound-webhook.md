@@ -19,7 +19,7 @@ KubeCI supports the webhook format for the following external services:
 For custom calls, the following format should be used:
 
 
-```
+```json
 {
     "labels": [
         "namespaced.label-1": "Label Value"
@@ -32,7 +32,7 @@ For custom calls, the following format should be used:
 
 ### Response Body ###
 
-```
+```json
 {
     "error": "Descriptive error message if something went wrong"
 }

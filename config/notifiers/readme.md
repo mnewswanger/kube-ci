@@ -4,7 +4,7 @@
 
 ### Slack ###
 
-```
+```yaml
 ---
 namespace: slack
 name: general
