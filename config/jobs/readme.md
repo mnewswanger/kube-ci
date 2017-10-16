@@ -1,6 +1,6 @@
 # Jobs #
 
-```
+```yaml
 ---
 name: Git Tag Push Example
 namespace: examples
@@ -53,7 +53,7 @@ rules:
 ...
 ```
 
-```
+```yaml
 ---
 name: Git Commit Push Example
 namespace: examples

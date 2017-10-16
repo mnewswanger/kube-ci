@@ -20,7 +20,7 @@ The `notify` endpoint tells the receiving node to execute the given `notifier`. 
 
 ### Response Body ###
 
-```
+```json
 {
     "error": "Descriptive error message if something went wrong"
 }

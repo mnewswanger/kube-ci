@@ -4,6 +4,7 @@
 
 ### Slack ###
 
+```yaml
 ---
 namespace: slack
 name: general
@@ -15,3 +16,4 @@ properties:
   headers:
     "Content-Type": "application/json"
 ...
+```

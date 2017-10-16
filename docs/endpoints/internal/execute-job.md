@@ -20,7 +20,7 @@ The `execute job` endpoint tells the receiving node to execute the given `jobId`
 
 ### Response Body ###
 
-```
+```json
 {
     "error": "Descriptive error message if something went wrong"
 }
