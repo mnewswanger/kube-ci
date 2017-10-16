@@ -14,7 +14,6 @@ The `metrics` endpoint is set up to provide metrics to external monitoring.
 
 ### Request Body ###
 
-
 *There is no expected request body*
 
 ## Response ##

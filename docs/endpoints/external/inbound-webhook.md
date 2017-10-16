@@ -18,7 +18,6 @@ KubeCI supports the webhook format for the following external services:
 
 For custom calls, the following format should be used:
 
-
 ```json
 {
     "labels": [
