@@ -3,8 +3,8 @@
 ## Core Functionality ##
 
 * [ ] Notifications
-    * [ ] Add templating to common properties
-    * [ ] Add ssl verification option for webhooks
+    * [x] Add templating to common properties
+    * [x] Add ssl verification option for webhooks
     * [ ] Fire on step and task completion
 * [ ] Update datastores
     * [x] Migrate --datastore to --config-datastore

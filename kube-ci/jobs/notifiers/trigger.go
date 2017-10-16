@@ -21,8 +21,8 @@ type JobProperties struct {
 }
 
 type triggerMetadata struct {
-	job          JobProperties
-	notification map[string]interface{}
+	Job          JobProperties
+	Notification map[string]interface{}
 }
 
 // Bind binds the trigger to a notifier
@@ -38,8 +38,8 @@ func (t *Trigger) Bind(n map[string]*Notification) error {
 // Fire executes a trigger
 func (t *Trigger) Fire(jobMetadata JobProperties) {
 	metadata := triggerMetadata{
-		job:          jobMetadata,
-		notification: t.Properties,
+		Job:          jobMetadata,
+		Notification: t.Properties,
 	}
 	t.notifierHandle.fire(metadata)
 }
