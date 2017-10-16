@@ -14,7 +14,6 @@ The `healtz` endpoint is set up to provide a health check endpoint for the servi
 
 ### Request Body ###
 
-
 *There is no expected request body*
 
 ## Response ##
