@@ -27,7 +27,6 @@ The following events are associated to `steps`.  They can be applied to notifier
 * `started` - The step was started - *Only applicable to notifiers*
 * `succeeded` - The step succeeded
 
-
 The following events are associated to `tasks`.  They can be applied to notifiers.
 
 * `attempt_failed` - The task attempt failed but may be retried - *Only applicable to notifiers*
