@@ -43,8 +43,7 @@ func Load(datastore string) (jobs map[string]*Job, notifications map[string]*not
 		for _, n := range j.Notifiers {
 			err = n.Bind(notifications)
 			if err != nil {
-				logrus.Error(err)
-				break
+				return
 			}
 			for _, e := range n.Events {
 				if _, exists := j.eventNotifications[e]; !exists {

@@ -98,6 +98,11 @@ func getStringFromInterface(i map[string]interface{}, keys ...string) string {
 }
 
 func loadJobsAndNotifications() (err error) {
-	configuredJobs, configuredNotifications, err = jobs.Load(datastore)
+	loadedJobs, loadedNotifications, err := jobs.Load(datastore)
+	if err != nil {
+		return
+	}
+	configuredJobs = loadedJobs
+	configuredNotifications = loadedNotifications
 	return
 }

@@ -84,7 +84,8 @@ var v1GetNotifiers = func(c *gin.Context) {
 var v1UpdateConfiguration = func(c *gin.Context) {
 	err := loadJobsAndNotifications()
 	if err != nil {
-		c.String(500, `{"error": "Could not reload configuration"}`)
+		c.JSON(500, map[string]string{"error": "Could not reload configuration"})
+		return
 	}
-	c.String(200, `{"error": null}`)
+	c.JSON(200, map[string]interface{}{"error": nil})
 }
