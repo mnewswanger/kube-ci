@@ -1,4 +1,4 @@
-# List Nofifiers #
+# List Notifiers #
 
 The `list notifiers` endpoint shows notifiers currently loaded into the application.
 
@@ -17,11 +17,22 @@ The `list notifiers` endpoint shows notifiers currently loaded into the applicat
 ### Response Body ###
 
 ```
-[
-    {
-        #JOB OBJECT
-    },
-]
+{
+    "slack.debug": {
+        "name": "debug",
+        "namespace": "slack",
+        "properties": {
+            "body": "{\"text\":\"{{.Job.Event}}: {{.Job.Namespace}} - {{.Job.Name}}\"}",
+            "headers": {
+                "Content-Type": "application/json"
+            },
+            "method": "POST",
+            "url": "<Slack URL>"
+        },
+        "retries": 0,
+        "type": "webhook"
+    }
+}
 ```
 
 ### Response Headers ###

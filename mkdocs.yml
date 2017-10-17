@@ -14,6 +14,8 @@ pages:
       - Healthz: endpoints/external/healthz.md
       - Inbound Webhook: endpoints/external/inbound-webhook.md
       - Job Callback: endpoints/external/job-callback.md
+      - List Jobs: endpoints/external/list-jobs.md
+      - List Notifiers: endpoints/external/list-notifiers.md
       - Metrics: endpoints/external/metrics.md
     - Internal:
       - Overview: endpoints/internal/index.md
